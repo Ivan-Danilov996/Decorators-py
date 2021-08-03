@@ -8,22 +8,25 @@ def write_file_func(data, path):
         json.dump(data, write_file)
 
 
-def decorator(old_function):
-    def new_function(**params):
-        new_param = old_function(params['param'])
-        data = {
-            'Date': str(datetime.datetime.now()),
-            'Function name': old_function.__name__,
-            'Old params': params['param'],
-            'New params': new_param
-        }
-        write_file_func(data, params["path"])
-        return new_param
+def parametrized_decor(path):
+    def decorator(old_function):
+        def new_function(**params):
+            new_param = old_function(params['file'])
+            data = {
+                'Date': str(datetime.datetime.now()),
+                'Function name': old_function.__name__,
+                'Old params': path,
+                'New params': new_param
+            }
+            write_file_func(data, path)
+            return new_param
 
-    return new_function
+        return new_function
+
+    return decorator
 
 
-@decorator
+@parametrized_decor(path='data.json')
 def get_hash_string(file):
     def generator(file):
         with open(file, "r") as f:
@@ -34,8 +37,4 @@ def get_hash_string(file):
     return [hash_string for hash_string in generator(file)]
 
 
-get_hash_string(param='countries.json', path='data.json')
-
-
-
-
+get_hash_string(file='countries.json')
